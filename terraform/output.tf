@@ -13,6 +13,6 @@ output "cluster_name" {
 output "static_ip_gke" {
   description = "Cluster static ip"
   value       = {
-    gke       = module.address.addresses
+  gke         = module.address.addresses
 }
 }
