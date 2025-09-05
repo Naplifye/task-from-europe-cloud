@@ -195,7 +195,41 @@ vim ansible-playbook/mongodb-deploy.yml
 
 </details>
 
-## Step 4: Run ansible playbook from directory ansible-playbook to provision mongodb VM
+## Step 4: Your IP on ens4 interface in VMs will differ, for example mine is 10.10.0.2, you will have a different one so change IP in ansible-playbook/mongodb-deploy.yml is needed, you can find your ip with commands below:
+
+<details>
+  <summary>files to change</summary>
+
+Change directory to ansible-playbook
+
+```
+cd ansible-playbook
+
+```
+Connect to mongodb VM via ssh via your IP, below is just example
+
+```
+ssh -i ssh-keys/google_compute_engine  scyoube1@35.225.78.82 
+
+```
+
+Find IP via ip command and look for interface ens4
+
+```
+ip -4 a 
+
+```
+
+Edit ansible-playbook/mongodb-deploy.yml with new IP for lines with mongodb-master, mongodb-slave and mongodb-arbiter
+
+```
+vi mongodb-deployment.yml
+
+```
+
+</details>
+
+## Step 5: Run ansible playbook from directory ansible-playbook to provision mongodb VM
 
 <details>
   <summary>ansible-playbook</summary>
