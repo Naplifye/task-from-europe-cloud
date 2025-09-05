@@ -2,5 +2,134 @@
 - name: deploy nodeapp to gke
   hosts: localhost  
   gather_facts: false   
-  roles:    
-    - nodeapp-deployment
+  tasks:
+    - name: Create a k8s namespace  
+      kubernetes.core.k8s:    
+        state: present    
+        definition:      
+          apiVersion: v1      
+          kind: Namespace      
+          metadata:        
+            name: nodeapp-dev
+
+    - name: Create nodeapp deployment
+      kubernetes.core.k8s:  
+        state: present   
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: nodeapp
+            namespace: nodeapp-dev
+          spec:
+            selector:
+              matchLabels:
+                run: nodeapp
+            template:
+              metadata:
+                labels:
+                  run: nodeapp
+              spec:
+                containers:
+                - image: us-central1-docker.pkg.dev/capable-hangout-470415-c7/docker-repo/nodeapp:1.21.0
+                  imagePullPolicy: IfNotPresent
+                  name: nodeapp
+                  ports:
+                  - containerPort: 3000
+                    protocol: TCP
+                  env:
+                  - name: MONGODB_MASTER
+                    value: "35.225.78.82"
+                  - name: MONGODB_SLAVE
+                    value: "35.225.78.82"
+                  - name: MONGODB_ARBITER
+                    value: "35.225.78.82"
+                  resources:
+                    limits:
+                      cpu: 500m
+                    requests:
+                      cpu: 200m
+
+    - name: Create nodeapp service
+      kubernetes.core.k8s:  
+        state: present   
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: nodeapp
+            namespace: nodeapp-dev
+          spec:
+            ports:
+            - port: 8080
+              protocol: TCP
+              targetPort: 3000
+            selector:
+              run: nodeapp
+            type: NodePort
+
+    - name: Create autoscaler
+      kubernetes.core.k8s:  
+        state: present   
+        definition:
+          apiVersion: autoscaling/v2
+          kind: HorizontalPodAutoscaler
+          metadata:
+            name: nodeapp
+            namespace: nodeapp-dev
+          spec:
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: nodeapp
+            minReplicas: 2
+            maxReplicas: 8
+            metrics:
+              - type: Resource
+                resource:
+                  name: cpu
+                  target:
+                    type: Utilization
+                    averageUtilization: 50
+
+    - name: Create ingress secret
+      kubernetes.core.k8s:    
+        state: present   
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: secret-tls
+            namespace: nodeapp-dev
+          data:
+            tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURDekNDQWZPZ0F3SUJBZ0lVUlRGZVZvRklteC9ZQ01TNE9YWDBRNWRxZTh3d0RRWUpLb1pJaHZjTkFRRUwKQlFBd0ZURVRNQkVHQTFVRUF3d0tibTlrWldGd2NDQkRRVEFlRncweU5UQTVNRFF3TURVeU1UbGFGdzB6TlRBNQpNREl3TURVeU1UbGFNQlV4RXpBUkJnTlZCQU1NQ201dlpHVmhjSEFnUTBFd2dnRWlNQTBHQ1NxR1NJYjNEUUVCCkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDL3hxVlU4SVhXZ1BBR3RVdS9hazI3S1R0MFRxb0JnNWxQVW93OE4vOWcKUFZHRVV0a2VqbGR6S3A3NFIwaWUwblVMbENoQ1dUcytSRkRqVzgxZGFLeit6bmV2RkNRcFNNdWo4ZTd5Wm9pYQpXaXRnT0RYa1k4aUVTOEsxaHN6ZFByTVF6aElKS0V2TnUyMWN4OU41bGdpenJxb2krL0pub2lMTTJUalMrbm9pCitndXZzSm9IU3gwVEdPanZUdklMYm13ck9lV2Vkd2NWYmxRTk1QVll0d0JpR05HQ0tYeklLRkNrWHdHVm5QSHAKbk50VmtDQVZlS2FydTVENUt0WkE3aG0zbVdqWUxsMXdXU3l1TnJydWJrOTBtMHMxdUg5TERhODZIM1hwVVdBZQpZMHpOY0wrV3RHbjFQUFdNcWt6SzJqcEV2djZjVk4wK3lEbWVOV1hWblFEN0FnTUJBQUdqVXpCUk1CMEdBMVVkCkRnUVdCQlJaTlZReERCZlMyNE1lMHZIYTRCdXM5dkFMa1RBZkJnTlZIU01FR0RBV2dCUlpOVlF4REJmUzI0TWUKMHZIYTRCdXM5dkFMa1RBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFDeAprN2paYktyV2dGa2NKbnRjMytJUlZGU3dOcTM0Z1gyaGJlRjhUWENSTDNPaGtKdXFmWlErWFFQUDVWcWhTVUZLCkV2cGhzdi84N3ZqcjN4QU42WE4vRUxFVkI5RlpIZDZkT3AvZHJNczZHRzA5aUNra0cwWnNlVENOVFBJQ01ZVjQKbmNNSXA3UENaNkgwd1NHRndRMzVxdk1YalFLWnVrcUhjTFZnSDlRQ0l4dTRmdEFhSWE0a2JtTjRUMjg1WkhtUQp0TlJMQnBiaDIzNFZjWjRzVy9uOHkwVjY4cjk1dU9VMFlyQWhEei9yUkM5S2JzUW9UeDRZN09ZNHljV09abVNCCmJCOGZKOEdxTWN3aEsvS3BXQm5qRnZ1QnV2bjVCK3lzdEF3L1pJb3hPdmRsM0JtMzdqMk4wemxNSzRGQThVYW0KQ2g1VGRUTWVLaUU2Y1hQMWxuVmsKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+            tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV1d0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktVd2dnU2hBZ0VBQW9JQkFRQy94cVZVOElYV2dQQUcKdFV1L2FrMjdLVHQwVHFvQmc1bFBVb3c4Ti85Z1BWR0VVdGtlamxkektwNzRSMGllMG5VTGxDaENXVHMrUkZEagpXODFkYUt6K3puZXZGQ1FwU011ajhlN3lab2lhV2l0Z09EWGtZOGlFUzhLMWhzemRQck1RemhJSktFdk51MjFjCng5TjVsZ2l6cnFvaSsvSm5vaUxNMlRqUytub2krZ3V2c0pvSFN4MFRHT2p2VHZJTGJtd3JPZVdlZHdjVmJsUU4KTVBWWXR3QmlHTkdDS1h6SUtGQ2tYd0dWblBIcG5OdFZrQ0FWZUthcnU1RDVLdFpBN2htM21XallMbDF3V1N5dQpOcnJ1Yms5MG0wczF1SDlMRGE4NkgzWHBVV0FlWTB6TmNMK1d0R24xUFBXTXFreksyanBFdnY2Y1ZOMCt5RG1lCk5XWFZuUUQ3QWdNQkFBRUNnZjhMWEk3RVR0RDBaRm5VQyttYm1EQ3RaZTZmeXJQeVl3UXlMdHgxWDRhWEFtQlIKOXBhUkRqTWdINUQySkpoVGV5UjBDeWhYY0p5UjZTVGhxTGxYVDF4RnZFc0ZsRmFRRzVWS1MrQmNKcmJ4R0x2TwpkNFlQTElUZlVaMjNlTVQvcStIdjhrVjBtc1BpN0dKam5NaHFsazVEQVpZUzBkcGY5QkJ4RW0xMkVtRFVzWXdUCkFENmszS3laZ0FDNWY3S1I0NHpPeFoyZkhCUEhaT0JOYXVXN0N0N3VTcWEwYnBBZjlzZ3BQb0FtWGtkYWRhOUsKYUpHTjdvbzN3d1k4WGxKQk8xK0tiRWF1N1lwcEtwZUh5UE9TeWlPZ1lPTXU3QUxKWE8xbGxUME9jU0FacEVtZgpTOCtnU3dYSkphRWx3eXdTS1RGU3BrRE5UaUFUeHNUVU1Jb1VjMjBDZ1lFQTRXR3hFSEUwY01LS2lxWVFlYzNkCkVoRXdOV0xsazUyODIxZ2VJUk1jMGdZTUttNnlYZG5uL0kwWEVYRzFBbzhBNHpaNWNCSlNtT2VUVWdiY3JieEIKVFZtbHVScnJ4OStxcUsvQ3RSTEpPRFNHMHRtN1ZRMVBNS1g0NGZhUFRNSktNay96cC9HUHhFY3lYWFRUVlJ6MAppZmRVK1JlTHBJWEtmTWJOL240TWFoVUNnWUVBMmRRNEMxd0dESnhpY1FBU3hkbWwxV0NQTTNBSEVCTG5IaTYxCmIwOE9uMVorbStJOUptbVRmQzFZNXEwbkI3NnNOSmxMczNPcmZwVGQxQlhmZXRWYjNrVkN2QUwxcVNxNXVPK20KOTE2YjRHY3F2YVdKWEN3dU9YMTRzSXB3UE5qKzNjVTM0NEdndXRzQXhjSjB2Sm8xb29LM2doNkc3c0JHcWk5UQpUeG5XMHM4Q2dZQUVjemRaeWNKdFQ0b0l2c3FvZlFZV2F6eDJjV056RExSRDZITi8xNjdEL3RhU3AramhyWUhGCkhNd056aDd5MC93Q2dIclpXYU5EM1o2dENmR2xoSWdOak8yV3dBOVR2UGpUcDlUQ1dvS2FsMzdwL3Q2U0NWYzgKOEtuL1hDenNLUkhwK0dZcE5MM1A5RS9zUkhnL3YvaWNHTVFXdnY1RTIxZHFLMHE1OGFjeEdRS0JnQTBhTEx6UwpMakwzL1J2YTYwWW5UMGhFWkppdGRsOUxJOGUyKzRiVWRJYTFCeXlOTVN4c1VVaTQyWTRXZ0RDQkVZNmdZZU5MClk5ZGJVUFIrMUZCcElQdC9vd0g0RTVxM1RUQ0lpYng3WGxqakc3a0lpZmlYVjdoeGlaN2sxTmQwSGZCcyttMmUKMEhJczFpRVBEMEtBN0JUNFU5MXB4S2Y3dk1SajBDclIzUkFWQW9HQkFPRUVCZml3cWZYcnE1U2hBUkh1WkVYZQo4T1RIN2sxQkVrY0NrMlFRczROQ0hTWUljdW1kSHNkaVc1Mm5kcjRXbkpGcml4LzJPRTE0NjdQTWIwa3Z1Z1BTCmJoRyt6V3FPTjRZUy8ya3VDcVhnOHd5a0VOQnhyelI3ZzVYNElWL2JvMTloN0hSK0NidTNwMnk5SFB5UlRIK2IKY0dZbDkrODhFalF3Nk5zS3dRNVgKLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=
+
+    - name: Create ingress
+      kubernetes.core.k8s:  
+        state: present   
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: ingress
+            namespace: nodeapp-dev
+            annotations:
+              kubernetes.io/ingress.global-static-ip-name: "gke-static-ip"
+          spec:
+            tls:
+            - hosts:
+                - localhost
+              secretName: secret-tls
+            rules:
+            - host: localhost
+            - http:
+                paths:
+                - path: /*
+                  pathType: ImplementationSpecific
+                  backend:
+                    service:
+                      name: nodeapp
+                      port:
+                        number: 8080
+  
