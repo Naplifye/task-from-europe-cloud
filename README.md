@@ -249,7 +249,7 @@ cd ansible-playbook
 ```
 
 ```
-ansible-playbook -i inventory/mongodb.yml mongodb-deploy.yml 
+ansible-playbook mongodb-deploy.yml 
 
 ```
 
