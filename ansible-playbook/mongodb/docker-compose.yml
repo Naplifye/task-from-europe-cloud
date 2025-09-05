@@ -5,7 +5,7 @@ services:
         dockerfile: mongodb.Dockerfile
       container_name: mongodb-master
       hostname: mongodb-master
-      command: ["--replSet", "rs0", "--bind_ip", "10.10.0.2", "--port", "27017", "--keyFile", "/etc/mongodb/pki/keyfile"]
+      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27017", "--keyFile", "/etc/mongodb/pki/keyfile"]
       volumes:
         - mongodb-master-data:/var/lib/mongodb
         - $PWD/init-user.js:/docker-entrypoint-initdb.d/init-user.js
@@ -25,7 +25,7 @@ services:
         dockerfile: mongodb.Dockerfile
       container_name: mongodb-slave
       hostname: mongodb-slave
-      command: ["--replSet", "rs0", "--bind_ip", "10.10.0.2", "--port", "27018", "--keyFile", "/etc/mongodb/pki/keyfile"] 
+      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27018", "--keyFile", "/etc/mongodb/pki/keyfile"] 
       volumes: 
         - mongodb-slave-data:/var/lib/mongodb  
       network_mode: host
@@ -38,7 +38,7 @@ services:
         dockerfile: mongodb.Dockerfile
       container_name: mongodb-arbiter
       hostname: mongodb-arbiter
-      command: ["--replSet", "rs0", "--bind_ip", "10.10.0.2", "--port", "27019", "--keyFile", "/etc/mongodb/pki/keyfile"]  
+      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27019", "--keyFile", "/etc/mongodb/pki/keyfile"]  
       volumes:
         - mongodb-arbiter-data:/var/lib/mongodb
       network_mode: host
