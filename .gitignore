@@ -4,5 +4,6 @@ terraform/.terraform.lock.hcl
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 
+.ansible
 ansible-playbook/.ansible
 ansible-playbook/ssh-keys/google_compute_engine
