@@ -1,0 +1,8 @@
+terraform/.terraform
+terraform/.ssh
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+ansible-playbook/.ansible
+ansible-playbook/ssh-keys/google_compute_engine
