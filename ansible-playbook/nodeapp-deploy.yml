@@ -61,7 +61,7 @@
             namespace: nodeapp-dev
           spec:
             ports:
-            - port: 8080
+            - port: 80
               protocol: TCP
               targetPort: 3000
             selector:
@@ -131,5 +131,5 @@
                     service:
                       name: nodeapp
                       port:
-                        number: 8080
+                        number: 80
   

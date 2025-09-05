@@ -1,6 +1,6 @@
 ---
 - name: Configure Docker Compose Mongodb
-  hosts: all
+  hosts: mongodb
   become: yes
   tasks:
     - name: Update apt cache
