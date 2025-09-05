@@ -26,7 +26,7 @@ Time limit: 7 calendar days
 
 ## Overview
 We'll be downloading components and creating credentials so we can connect to GCP via Terraform
-## Step 1: Download Terraform, Google SDK, Kubectl via brew
+## Step 1: Download Terraform, Google SDK, Kubectl and Ansible via brew
 <details>
   <summary>google sdk install</summary>
 
@@ -51,6 +51,15 @@ brew install hashicorp/tap/terraform
 
 ```
 brew install kubernetes-cli
+```
+
+</details>
+
+<details>
+  <summary>ansible install</summary>
+
+```
+brew install ansible
 ```
 
 </details>
