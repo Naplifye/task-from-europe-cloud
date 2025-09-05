@@ -175,7 +175,7 @@ cp terraform/.ssh/google_compute_engine ansible-playbook/ssh-keys/
 
 </details>
 
-## Step 2: Change IP address for mongodb VM in ```ansible-playbook/inventory/mongodb.yml``` to the one from Terraform output that was shown after terraform apply, so Ansible can connect via ssh
+## Step 2: Change IP address for mongodb VM in ```ansible-playbook/inventory/mongodb.yml``` to the one from Terraform output mongodb_public_ip that was shown after terraform apply, so Ansible can connect via ssh
 
 ## Step 3: Your GCP user in VMs will differ, for example mine is scyoube1, you will have a different one so change files to your name:
 
