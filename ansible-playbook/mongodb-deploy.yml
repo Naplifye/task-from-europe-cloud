@@ -1,0 +1,50 @@
+---
+- name: Configure Docker Compose Mongodb
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    
+    - name: Download and Import Docker GPG key
+      apt_key: 
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add MongoDB repository
+      apt_repository: 
+        repo: deb https://download.docker.com/linux/debian {{ansible_distribution_release}} stable
+        filename: docker.list
+        update_cache: true
+        state: present
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+    
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Copy mongodb files to remote server
+      copy:
+        src: mongodb/
+        dest: /home/scyoube1/mongodb
+        owner: scyoube1
+        group: scyoube1
+        mode: '0644'
+
+    - name: Run docker-compose up
+      community.docker.docker_compose_v2:
+        project_src: /home/scyoube1/mongodb
+        state: present
+

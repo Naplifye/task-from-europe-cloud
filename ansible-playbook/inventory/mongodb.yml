@@ -1,0 +1,7 @@
+---
+all:
+  children:
+    mongodb:
+      hosts:
+        mongodb:
+          ansible_host: 35.225.78.82

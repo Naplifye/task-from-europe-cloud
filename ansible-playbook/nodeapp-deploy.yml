@@ -1,0 +1,6 @@
+---
+- name: deploy nodeapp to gke
+  hosts: localhost  
+  gather_facts: false   
+  roles:    
+    - nodeapp-deployment
