@@ -130,7 +130,22 @@ cd task-from-europe-cloud
 
 </details>
 
-## Step 3: Create infrastructure via Terraform
+## Step 3: Change project_id in ```terraform/variables.tf``` to your project ID from GCP
+
+<details>
+  <summary>change directory</summary>
+
+```
+cd terraform
+```
+
+```
+vim terraform/variables.tf
+```
+
+</details>
+
+## Step 4: Create infrastructure via Terraform
 
 <details>
   <summary>terraform commands</summary>
@@ -152,7 +167,7 @@ terraform apply
 
 </details>
 
-## Step 4: After terraform is ready you will have output similar to the one shown below, this means we are ready with provisioning of our infrastructure in GCP
+## Step 5: After terraform is ready you will have output similar to the one shown below, this means we are ready with provisioning of our infrastructure in GCP
 
 <details>
   <summary>terraform output</summary>
