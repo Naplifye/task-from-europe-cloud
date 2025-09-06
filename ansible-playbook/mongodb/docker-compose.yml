@@ -7,7 +7,7 @@ services:
       hostname: mongodb-master
       command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27017", "--keyFile", "/etc/mongodb/pki/keyfile"]
       volumes:
-        - mongodb-master-data:/var/lib/mongodb
+        - mongodb-master-data:/data/db
         - $PWD/init-user.js:/docker-entrypoint-initdb.d/init-user.js
       healthcheck:
         test: echo "try {rs.status()} catch(err) {rs.initiate({_id:'rs0',members:[{_id:0,host:'10.10.0.2:27017'},{_id:1,host:'10.10.0.2:27018'},{_id:2,host:'10.10.0.2:27019',arbiterOnly:true}]})}" | mongosh --host 10.10.0.2:27017 -u root -p root --authenticationDatabase admin --quiet
@@ -27,7 +27,7 @@ services:
       hostname: mongodb-slave
       command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27018", "--keyFile", "/etc/mongodb/pki/keyfile"] 
       volumes: 
-        - mongodb-slave-data:/var/lib/mongodb  
+        - mongodb-slave-data:/data/db 
       network_mode: host
       environment:
         MONGO_INITDB_ROOT_USERNAME: root
@@ -40,7 +40,7 @@ services:
       hostname: mongodb-arbiter
       command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27019", "--keyFile", "/etc/mongodb/pki/keyfile"]  
       volumes:
-        - mongodb-arbiter-data:/var/lib/mongodb
+        - mongodb-arbiter-data:/data/db
       network_mode: host
       environment:
         MONGO_INITDB_ROOT_USERNAME: root
