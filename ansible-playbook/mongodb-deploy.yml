@@ -12,7 +12,7 @@
         url: https://download.docker.com/linux/debian/gpg
         state: present
 
-    - name: Add MongoDB repository
+    - name: Add Docker repository
       apt_repository: 
         repo: deb https://download.docker.com/linux/debian {{ansible_distribution_release}} stable
         filename: docker.list
@@ -43,8 +43,15 @@
         group: scyoube1
         mode: '0644'
 
-    - name: Run docker-compose up
+    - name: Tear down existing docker services
       community.docker.docker_compose_v2:
         project_src: /home/scyoube1/mongodb
-        state: present
+        state: absent
 
+    - name: Create and start docker services
+      community.docker.docker_compose_v2:
+        project_src: /home/scyoube1/mongodb
+
+    - name: Run `docker compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/scyoube1/mongodb
