@@ -203,6 +203,17 @@ cp terraform/.ssh/google_compute_engine ansible-playbook/ssh-keys/
 
 ## Step 2: Change IP address for mongodb VM in ```ansible-playbook/inventory/mongodb.yml``` to the one from Terraform output mongodb_public_ip that was shown after terraform apply, so Ansible can connect via ssh
 
+<details>
+  <summary>files to change</summary>
+
+Change IP
+```
+vim ansible-playbook/inventory/mongodb.yml
+
+```
+
+</details>
+
 ## Step 3: Your GCP user in VMs will differ, for example mine is scyoube1, you will have a different one so change files to your name:
 
 <details>
@@ -213,7 +224,7 @@ Change remote_user to your username
 vim ansible-playbook/ansible.cfg
 
 ```
-Copy mongodb files to remote server and Run docker-compose up must be changed
+The lines that start with "Copy mongodb files to remote server" and Run "docker-compose up" must be changed
 ```
 vim ansible-playbook/mongodb-deploy.yml 
 
@@ -232,7 +243,7 @@ Change directory to ansible-playbook
 cd ansible-playbook
 
 ```
-Connect to mongodb VM via ssh via your IP, below is just example
+Connect to mongodb VM via ssh with your IP, below is just example
 
 ```
 ssh -i ssh-keys/google_compute_engine  scyoube1@35.225.78.82 
