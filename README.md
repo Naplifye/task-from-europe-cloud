@@ -119,7 +119,7 @@ git clone https://github.com/Naplifye/task-from-europe-cloud.git
 
 </details>
 
-## Step 2: change directory to task-from-europe-cloud
+## Step 2: Change directory to task-from-europe-cloud
 
 <details>
   <summary>change directory</summary>
@@ -133,11 +133,7 @@ cd task-from-europe-cloud
 ## Step 3: Change project_id in ```terraform/variables.tf``` to your project ID from GCP
 
 <details>
-  <summary>change directory</summary>
-
-```
-cd terraform
-```
+  <summary>files to change</summary>
 
 ```
 vim terraform/variables.tf
@@ -149,6 +145,12 @@ vim terraform/variables.tf
 
 <details>
   <summary>terraform commands</summary>
+
+Change directory to terraform
+
+```
+cd terraform
+```
 
 Init Terraform
 
