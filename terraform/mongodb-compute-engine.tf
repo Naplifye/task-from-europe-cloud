@@ -10,7 +10,7 @@ resource "google_compute_instance" "mongodb" {
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-12"
-      size  = 10
+      size  = 30
       type  = "pd-balanced"
     }
   }

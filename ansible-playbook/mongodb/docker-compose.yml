@@ -1,50 +1,48 @@
 services:
   mongodb-master:
-      build:
-        context: .
-        dockerfile: mongodb.Dockerfile
       container_name: mongodb-master
       hostname: mongodb-master
-      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27017", "--keyFile", "/etc/mongodb/pki/keyfile"]
+      image: us-central1-docker.pkg.dev/capable-hangout-470415-c7/docker-repo/mongodb:1.30.0
+      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.10", "--port", "27017", "--keyFile", "/data/configdb/keyfile"] 
       volumes:
         - mongodb-master-data:/data/db
         - mongodb-master-config:/data/configdb
         - $PWD/init-user.js:/docker-entrypoint-initdb.d/init-user.js
       healthcheck:
-        test: echo "try {rs.status()} catch(err) {rs.initiate({_id:'rs0',members:[{_id:0,host:'10.10.0.2:27017'},{_id:1,host:'10.10.0.2:27018'},{_id:2,host:'10.10.0.2:27019',arbiterOnly:true}]})}" | mongosh --host 10.10.0.2:27017 -u root -p root --authenticationDatabase admin --quiet
+        test: echo "try {rs.status()} catch(err) {rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'},{_id:1,host:'127.0.0.1:27018'},{_id:2,host:'127.0.0.1:27019',arbiterOnly:true}]})}" | mongosh --host 127.0.0.1:27017 -u root -p root --authenticationDatabase admin --quiet
         interval: 5m
-        timeout: 10s
-        retries: 3
-        start_period: 10s
+        timeout: 3m
+        retries: 5
+        start_period: 3m
       network_mode: host
+      restart: always
       environment:
         MONGO_INITDB_ROOT_USERNAME: root
         MONGO_INITDB_ROOT_PASSWORD: root
+        MONGO_INITDB_DATABASE: docker-node-mongo
   mongodb-slave:
-      build:
-        context: .
-        dockerfile: mongodb.Dockerfile
       container_name: mongodb-slave
       hostname: mongodb-slave
-      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27018", "--keyFile", "/etc/mongodb/pki/keyfile"] 
+      image: us-central1-docker.pkg.dev/capable-hangout-470415-c7/docker-repo/mongodb:1.30.0
+      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.10", "--port", "27018", "--keyFile", "/data/configdb/keyfile"]  
       volumes: 
         - mongodb-slave-data:/data/db
         - mongodb-slave-config:/data/configdb
       network_mode: host
+      restart: always
       environment:
         MONGO_INITDB_ROOT_USERNAME: root
         MONGO_INITDB_ROOT_PASSWORD: root
   mongodb-arbiter:
-      build:
-        context: .
-        dockerfile: mongodb.Dockerfile
       container_name: mongodb-arbiter
       hostname: mongodb-arbiter
-      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.2", "--port", "27019", "--keyFile", "/etc/mongodb/pki/keyfile"]  
+      image: us-central1-docker.pkg.dev/capable-hangout-470415-c7/docker-repo/mongodb:1.30.0
+      command: ["--replSet", "rs0", "--bind_ip", "127.0.0.1,10.10.0.10", "--port", "27019", "--keyFile", "/data/configdb/keyfile"]  
       volumes:
         - mongodb-arbiter-data:/data/db
         - mongodb-arbiter-config:/data/configdb
       network_mode: host
+      restart: always
       environment:
         MONGO_INITDB_ROOT_USERNAME: root
         MONGO_INITDB_ROOT_PASSWORD: root
